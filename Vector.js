@@ -47,6 +47,17 @@ class VectorUtils {
 
 
 
+	//	Calculates the distance between two vectors
+	static distance (a, b) {
+
+		//	Create a new vector from the start of the first vector to the end of the second
+		const displacementVector = b.subtract(a);
+
+		//	Return the magnitude of the displacement vector
+		return displacementVector.magnitude;
+
+	}
+	
 	//	Calculates the dot product of two vectors
 	static dot (a, b) {
 
@@ -250,6 +261,20 @@ class Vector {
 
 		//	Loop through each element of this vector and multiply it by alpha
 		let result = this.value.map((elem, i) => elem * alpha);
+
+		//	Return the result
+		return VectorUtils.arrayToVector(result);
+
+	}
+
+	//	Calculates the product of this vector with another vector
+	multiplyVector (vector) {
+
+		//	If dimensions are different then return the original vector
+		if (this.dimensions !== vector.dimensions) return this;
+
+		//	Loop through each element of this vector and multiply it by the corresponding
+		let result = this.value.map((elem, i) => elem * (vector.value[i] || 0));
 
 		//	Return the result
 		return VectorUtils.arrayToVector(result);

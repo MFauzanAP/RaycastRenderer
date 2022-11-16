@@ -4,7 +4,7 @@ class Camera {
 	//	Declare public properties
 	position;
 	fov;
-	skyColor = new Vector4(0, 0, 0, 255);
+	skyColor = new Color(0, 0, 0, 255);
 
 	//	Declare private properties
 	#nearPlane = 1;
@@ -15,7 +15,7 @@ class Camera {
 
 
 	//	Define constructor method
-	constructor (position = new Vector3(0, 0, 0), fov = 45) {
+	constructor (position = new Vector3(0, 0, 0), fov = 60) {
 
 		//	Calculate ratio between width and height
 		const ratio = canvas.width / canvas.height;

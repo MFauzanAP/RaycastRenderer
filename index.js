@@ -4,23 +4,23 @@ let canvas;
 let ctx;
 
 //	Constants
-const skyColor = new Vector4(0, 0, 0, 255);
+const skyColor = new Color(0, 0, 0, 255);
 
 //	Declare objects in the scene
 const sceneSpheres = [
 	{
-		color		: new Vector4(255, 0, 0, 255),
-		center		: new Vector3(0, -1, 3),
+		color		: new Color(255, 0, 0, 255),
+		center		: new Vector3(0, -0.5, 8),
 		radius		: 1,
 	},
 	{
-		color		: new Vector4(0, 0, 255, 255),
-		center		: new Vector3(2, 0, 4),
+		color		: new Color(0, 0, 255, 255),
+		center		: new Vector3(1, 0.5, 8),
 		radius		: 1,
 	},
 	{
-		color		: new Vector4(0, 255, 0, 255),
-		center		: new Vector3(-2, 0, 4),
+		color		: new Color(0, 255, 0, 255),
+		center		: new Vector3(-1, -0.5, 8),
 		radius		: 1,
 	},
 ];
@@ -34,7 +34,7 @@ const getPixelAt = (x, y, imageData) => {
 	const finalIndex = yIndex + xIndex;
 
 	//	Return pixel at this index
-	return new Vector4(...imageData.data.slice(finalIndex, finalIndex + 4));
+	return new Color(...imageData.data.slice(finalIndex, finalIndex + 4));
 
 };
 
@@ -58,16 +58,14 @@ const raycastRender = () => {
 	const outputImage = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
 	//	Loop through each pixel on the screen
-	console.log(camera.pixelToViewport(960, 200));
-	console.log(camera.pixelToViewport(960, 800));
-	// for (let x = 950; x < 970; x++) {
-	// 	for (let y = 530; y < 550; y++) {
 	for (let x = 0; x < canvas.width; x++) {
 		for (let y = 0; y < canvas.height; y++) {
 
-			//	Set color as sky color
-			const colorValue = Math.round(Math.random() * 255);
-			setPixelAt(skyColor, x, y, outputImage);
+			//	Keep track of the closest object
+			let minimum = Infinity;
+
+			//	Keep track of the final color of this pixel
+			let finalColor = skyColor;
 
 			//	Loop through each object in the scene
 			for (let i = 0; i < sceneSpheres.length; i++) {
@@ -78,8 +76,6 @@ const raycastRender = () => {
 				//	Formulate necessary equations to calculate coefficients
 				const pixelVector = camera.pixelToViewport(x, y).subtract(camera.position);
 				const objectVector = object.center.subtract(camera.position);
-				// console.log(pixelVector, objectVector);
-				// setPixelAt(new Vector4(Math.floor(pixelVector.magnitude / 50) * 50, Math.floor(pixelVector.magnitude / 50) * 50, Math.floor(pixelVector.magnitude / 50) * 50, 255), x, y, outputImage);
 
 				//	Calculate coefficients of the quadratic equation
 				const a = VectorUtils.dot(pixelVector, pixelVector);
@@ -88,23 +84,40 @@ const raycastRender = () => {
 
 				//	Calculate discriminant
 				const discriminant = Math.pow(b, 2) - (4 * a * c);
-				// console.log(a, b, c, discriminant);
+
+				//	If there is an intersection
 				if (discriminant >= 0) {
 					
+					//	Calculate intersection point
 					const t1 = (-b + Math.sqrt(discriminant)) / (2 * a);
 					const t2 = (-b - Math.sqrt(discriminant)) / (2 * a);
-					// console.log(t1, t2);
-					setPixelAt(object.color, x, y, outputImage);
+					const intersectionPoint = camera.position.add(pixelVector.multiply(Math.max(t1, t2)));
+
+					//	Calculate distance between this object and the camera
+					const distance = VectorUtils.distance(camera.position, intersectionPoint);
+
+					//	If this point is closer to the camera than the previous closest object
+					if (distance < minimum) {
+
+						//	Set a new minimum distance
+						minimum = distance;
+
+						//	Set the final color to the color of this object
+						finalColor = object.color.shade((Math.random() * 2) - 1);
+
+					}
 
 				}
 
 			}
 
+			//	Color the pixel with the final color
+			setPixelAt(finalColor, x, y, outputImage);
+
 		}
 	}
 
 	//	Draw image to canvas
-	console.log(outputImage);
 	ctx.putImageData(outputImage, 0, 0);
 
 };
@@ -126,8 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	const newVector = vector.add(new Vector3(3, 2, 1), new Vector3(3, 2, 1));
 	console.log(vector);
 	console.log(newVector);
-	console.log(VectorUtils.dot(vector, newVector));
-	console.log(newVector.subtract(new Vector3(3, 2, 1), new Vector3(3, 2, 1)));
+	console.log(MathUtils.clamp(0.99, -1, 1));
+	console.log(new Color(255, 0, 0, 255).shade(0.5));
 	raycastRender();
 
 });
